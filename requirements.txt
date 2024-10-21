@@ -1,0 +1,5 @@
+# Required packages for the banking application
+
+# Tkinter is included with Python installations by default
+tk
+
