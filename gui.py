@@ -1,61 +1,113 @@
 import tkinter as tk
 from tkinter import messagebox
-from banking import BankAccount, InsufficientFundsError
+from tkinter import ttk
+from banking import BankAccount, InsufficientFundsError, UserAlreadyExistsError, UserNotFoundError
 
-# Create a new instance of a bank account
-account = BankAccount(500)  # Initial balance of 500
+current_user = None  # To store the logged-in user
 
-# Function to handle withdrawals
-def handle_withdraw():
+# Function to handle login
+def handle_login():
+    global current_user
+    username = entry_username.get()
+    password = entry_password.get()
+
     try:
-        amount = float(entry_amount.get())
-        account.withdraw(amount)
-        lbl_balance.config(text=f"Balance: {account.get_balance()}")
-        messagebox.showinfo("Success", f"Withdrew {amount} successfully!")
-    except InsufficientFundsError as e:
+        current_user = BankAccount.login(username, password)
+        messagebox.showinfo("Login Success", f"Welcome {username}!")
+        load_banking_interface()
+    except UserNotFoundError as e:
         messagebox.showerror("Error", str(e))
-    except ValueError:
-        messagebox.showerror("Error", "Invalid amount entered")
 
-# Function to handle deposits
-def handle_deposit():
+# Function to handle signup
+def handle_signup():
+    global current_user
+    username = entry_username.get()
+    password = entry_password.get()
+
     try:
-        amount = float(entry_amount.get())
-        account.deposit(amount)
-        lbl_balance.config(text=f"Balance: {account.get_balance()}")
-        messagebox.showinfo("Success", f"Deposited {amount} successfully!")
-    except ValueError:
-        messagebox.showerror("Error", "Invalid amount entered")
+        current_user = BankAccount.signup(username, password)
+        messagebox.showinfo("Signup Success", f"Account created for {username}!")
+        load_banking_interface()
+    except UserAlreadyExistsError as e:
+        messagebox.showerror("Error", str(e))
 
-# Function to display current balance
-def check_balance():
-    lbl_balance.config(text=f"Balance: {account.get_balance()}")
+# Function to load the banking interface (after login/signup)
+def load_banking_interface():
+    for widget in root.winfo_children():
+        widget.destroy()
 
-# Ensure to set up the GUI and the buttons
+    lbl_balance = tk.Label(root, text=f"Balance: {current_user.get_balance()}", font=("Arial", 14))
+    lbl_balance.pack(pady=20)
+
+    lbl_amount = tk.Label(root, text="Enter Amount:")
+    lbl_amount.pack(pady=5)
+
+    entry_amount = tk.Entry(root)
+    entry_amount.pack(pady=5)
+
+    def handle_withdraw():
+        try:
+            amount = float(entry_amount.get())
+            current_user.withdraw(amount)
+            lbl_balance.config(text=f"Balance: {current_user.get_balance()}")
+            messagebox.showinfo("Success", f"Withdrew {amount} successfully!")
+        except InsufficientFundsError as e:
+            messagebox.showerror("Error", str(e))
+        except ValueError:
+            messagebox.showerror("Error", "Invalid amount entered")
+
+    def handle_deposit():
+        try:
+            amount = float(entry_amount.get())
+            current_user.deposit(amount)
+            lbl_balance.config(text=f"Balance: {current_user.get_balance()}")
+            messagebox.showinfo("Success", f"Deposited {amount} successfully!")
+        except ValueError:
+            messagebox.showerror("Error", "Invalid amount entered")
+
+    btn_withdraw = tk.Button(root, text="Withdraw", command=handle_withdraw)
+    btn_withdraw.pack(pady=5)
+
+    btn_deposit = tk.Button(root, text="Deposit", command=handle_deposit)
+    btn_deposit.pack(pady=5)
+
+    btn_logout = tk.Button(root, text="Logout", command=load_login_signup_interface)
+    btn_logout.pack(pady=5)
+
+# Function to load login/signup interface
+def load_login_signup_interface():
+    for widget in root.winfo_children():
+        widget.destroy()
+
+    lbl_title = tk.Label(root, text="Banking App Login", font=("Arial", 16))
+    lbl_title.pack(pady=10)
+
+    lbl_username = tk.Label(root, text="Username:")
+    lbl_username.pack(pady=5)
+
+    global entry_username
+    entry_username = tk.Entry(root)
+    entry_username.pack(pady=5)
+
+    lbl_password = tk.Label(root, text="Password:")
+    lbl_password.pack(pady=5)
+
+    global entry_password
+    entry_password = tk.Entry(root, show='*')
+    entry_password.pack(pady=5)
+
+    btn_login = tk.Button(root, text="Login", command=handle_login)
+    btn_login.pack(pady=5)
+
+    btn_signup = tk.Button(root, text="Signup", command=handle_signup)
+    btn_signup.pack(pady=5)
+
+# Initialize the Tkinter window
 root = tk.Tk()
 root.title("Banking Application")
 
-# UI elements (Assuming this is defined)
-lbl_title = tk.Label(root, text="Welcome to Your Bank Account", font=("Arial", 16))
-lbl_title.pack(pady=10)
-
-lbl_amount = tk.Label(root, text="Enter Amount:")
-lbl_amount.pack(pady=5)
-
-entry_amount = tk.Entry(root)
-entry_amount.pack(pady=5)
-
-btn_withdraw = tk.Button(root, text="Withdraw", command=handle_withdraw)
-btn_withdraw.pack(pady=5)
-
-btn_deposit = tk.Button(root, text="Deposit", command=handle_deposit)
-btn_deposit.pack(pady=5)
-
-btn_check_balance = tk.Button(root, text="Check Balance", command=check_balance)
-btn_check_balance.pack(pady=5)
-
-lbl_balance = tk.Label(root, text=f"Balance: {account.get_balance()}", font=("Arial", 14))
-lbl_balance.pack(pady=20)
+# Load the login/signup interface at the start
+load_login_signup_interface()
 
 # Start the GUI loop
 root.mainloop()
