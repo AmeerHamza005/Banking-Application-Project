@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import messagebox
-from tkinter import ttk
 from banking import BankAccount, InsufficientFundsError, UserAlreadyExistsError, UserNotFoundError
 
 current_user = None  # To store the logged-in user
@@ -23,15 +22,17 @@ def handle_signup():
     global current_user
     username = entry_username.get()
     password = entry_password.get()
+    phone = entry_phone.get()  # Get phone number from the input field 
+    email = entry_email.get()  # Get email from the input field
 
     try:
-        current_user = BankAccount.signup(username, password)
+        current_user = BankAccount.signup(username, password, phone, email)  # Pass all required arguments
         messagebox.showinfo("Signup Success", f"Account created for {username}!")
         load_banking_interface()
     except UserAlreadyExistsError as e:
         messagebox.showerror("Error", str(e))
 
-# Function to load the banking interface (after login/signup)
+# Function to load the banking interface
 def load_banking_interface():
     for widget in root.winfo_children():
         widget.destroy()
@@ -79,7 +80,7 @@ def load_login_signup_interface():
     for widget in root.winfo_children():
         widget.destroy()
 
-    lbl_title = tk.Label(root, text="Banking App Login", font=("Arial", 16))
+    lbl_title = tk.Label(root, text="Banking App Signup", font=("Arial", 16))
     lbl_title.pack(pady=10)
 
     lbl_username = tk.Label(root, text="Username:")
@@ -96,10 +97,21 @@ def load_login_signup_interface():
     entry_password = tk.Entry(root, show='*')
     entry_password.pack(pady=5)
 
-    btn_login = tk.Button(root, text="Login", command=handle_login)
-    btn_login.pack(pady=5)
+    lbl_phone = tk.Label(root, text="Phone Number:")
+    lbl_phone.pack(pady=5)
 
-    btn_signup = tk.Button(root, text="Signup", command=handle_signup)
+    global entry_phone
+    entry_phone = tk.Entry(root)
+    entry_phone.pack(pady=5)
+
+    lbl_email = tk.Label(root, text="Email:")
+    lbl_email.pack(pady=5)
+
+    global entry_email
+    entry_email = tk.Entry(root)
+    entry_email.pack(pady=5)
+
+    btn_signup = tk.Button(root, text="Signup", command=handle_signup)  # Call handle_signup when clicked
     btn_signup.pack(pady=5)
 
 # Initialize the Tkinter window
